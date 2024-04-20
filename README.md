@@ -1,10 +1,12 @@
 # IR_Project
 
 ## 執行
-pip install google-play-scraper  
-pip install zhconv  
-python dataset.py     # 非必要盡量不要動  
-python preprocess.py  
+pip install google-play-scraper   
+pip install google-cloud-translate
+python dataset.py                                                                  # 非必要盡量不要動  
+set GOOGLE_APPLICATION_CREDENTIALS="path\pivotal-trail-420822-a6647078f1df.json"   # 非必要盡量不要動
+echo %GOOGLE_APPLICATION_CREDENTIALS%                                              # 非必要盡量不要動，應該要回復上面的path  
+python preprocess.py                                                               # 非必要盡量不要動
 
 ## 功能
 1. 遊戲內容分群
@@ -32,13 +34,13 @@ python preprocess.py
     - 針對"策略", "角色扮演", "動作", "賽車遊戲"4種遊戲種類下載20-40種遊戲，每個遊戲的留言數取120則
     - {遊戲封包名ID、遊戲名稱Title、遊戲類別Genre、遊戲簡介Description、遊戲分數Score、留言Reviews:{用戶名稱UserName、留言內容Content、用戶評分Userscore、留言時間At、開發商回覆內容ReplyContent、開發商回覆時間ReplyAt}}
 2. 資料集前處理 -> preprocess.py -> preprocess.json, , check_preprocess.json
-    - 刪除非中文(eg. 英文、日文、只有符號沒有文字)的遊戲簡介與留言，並將簡中轉換成繁中
+    - 使用google-cloud-translate-v2刪除非中文(eg. 英文、日文、只有符號沒有文字)的遊戲簡介與留言
     - 統計資料
-        - "策略"有20個遊戲，留言數: 2400 -> 2175
-        - "角色扮演"有36個遊戲，留言數: 4320 -> 4042
-        - "動作"有28個遊戲，留言數: 3360 -> 3109
-        - "賽車遊戲"有24個遊戲，留言數: 2880 -> 2567
+        - "策略"有20個遊戲，留言數: 2400 -> 1748
+        - "角色扮演"有36個遊戲，留言數: 4320 -> 3278
+        - "動作"有28個遊戲，留言數: 3360 -> 2453
+        - "賽車遊戲"有24個遊戲，留言數: 2880 -> 1953
 
 ## 參考資料
-- [google-play-scraper文件](https://pypi.org/project/google-play-scraper/)抓取google play store資料
-- [zhconv文件](https://pypi.org/project/zhconv/)簡中轉成繁中
+- [google-play-scraper文件](https://pypi.org/project/google-play-scraper/) 抓取google play store資料
+- [google-cloud-translate文件](https://cloud.google.com/translate/docs/basic/detecting-language?hl=zh-cn) 只保留繁中的遊戲簡介和留言，其他刪除
