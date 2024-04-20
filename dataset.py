@@ -1,4 +1,4 @@
-# 如果要重新下載dataset，要接著跑check.py，更新統計數目
+from utils import check
 import json
 from google_play_scraper import search, app, reviews
 
@@ -50,3 +50,4 @@ for query in search_queries:
 with open("dataset.json", "w", encoding="utf-8") as file:
     json.dump(all_games, file, ensure_ascii=False, indent=4)
 
+check('dataset.json')
