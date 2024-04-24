@@ -1,46 +1,28 @@
 # IR_Project
-
-## 執行
-pip install google-play-scraper   
-pip install google-cloud-translate
-python dataset.py                                                                  # 非必要盡量不要動  
-set GOOGLE_APPLICATION_CREDENTIALS="path\pivotal-trail-420822-a6647078f1df.json"   # 非必要盡量不要動
-echo %GOOGLE_APPLICATION_CREDENTIALS%                                              # 非必要盡量不要動，應該要回復上面的path  
-python preprocess.py                                                               # 非必要盡量不要動
-
 ## 功能
 1. 遊戲內容分群
+    - 資料集: data\preprocess.json (統計資料: data\check_preprocess.json)
     - 根據google play的"關於這個遊戲"的內容做分群
     - 解決只能使用遊戲名稱搜尋的問題，可以改使用遊戲內容的詞搜尋
     - 分群的問題: 分群分法多種，可能會有多個小群
         - 目前解法: 遊戲有4個種類，每個種類有20-40種遊戲，每個種類再做分群，共4個分群系統
-2. 過濾廣告留言
+2. 過濾廣告留言 for 天堂M
+    - 資料集: data\preprocess2.json
     - 人工標籤: 開發者的回覆
     - 機器學習: 遊戲名稱、遊戲簡介、留言、標籤(是否為廣告)
-    - "天堂M"的廣告留言較多，可能只針對該遊戲做功能
-        - 需要增加留言數
 3. 留言分類
+    - 資料集: data\preprocess2.json
     - 對留言進行句子分類
     - 還沒做人工標籤
     - 斷句系統
 4. 留言分群
+    - 資料集: data\preprocess.json (統計資料: data\check_preprocess.json)
     - 留言做重點分群，類似google map評論
     - 分群的問題: 分群分法多種，可能會有多個小群
         - 目前解法: 遊戲有4個種類，每個種類有20-40種遊戲，每個種類再做分群，共4個分群系統
 
-## 資料集處理
-1. 下載資料 -> dataset.py -> dataset.json, check_dataset.json
-    - 使用google_play_scraper API下載資料
-    - 針對"策略", "角色扮演", "動作", "賽車遊戲"4種遊戲種類下載20-40種遊戲，每個遊戲的留言數取120則
-    - {遊戲封包名ID、遊戲名稱Title、遊戲類別Genre、遊戲簡介Description、遊戲分數Score、留言Reviews:{用戶名稱UserName、留言內容Content、用戶評分Userscore、留言時間At、開發商回覆內容ReplyContent、開發商回覆時間ReplyAt}}
-2. 資料集前處理 -> preprocess.py -> preprocess.json, , check_preprocess.json
-    - 使用google-cloud-translate-v2刪除非中文(eg. 英文、日文、只有符號沒有文字)的遊戲簡介與留言
-    - 統計資料
-        - "策略"有20個遊戲，留言數: 2400 -> 1748
-        - "角色扮演"有36個遊戲，留言數: 4320 -> 3278
-        - "動作"有28個遊戲，留言數: 3360 -> 2453
-        - "賽車遊戲"有24個遊戲，留言數: 2880 -> 1953
-
-## 參考資料
-- [google-play-scraper文件](https://pypi.org/project/google-play-scraper/) 抓取google play store資料
-- [google-cloud-translate文件](https://cloud.google.com/translate/docs/basic/detecting-language?hl=zh-cn) 只保留繁中的遊戲簡介和留言，其他刪除
+## 資料集
+1. for 14: dataset.py -> dataset.json, check_dataset.json -> preprocess.py -> preprocess.json, check_preprocess.json
+    - 4個領域, 106個遊戲, 9263則留言
+2. for 23: gamecomment.py -> gamecomment.json -> preprocess2.py -> preprocess2.json
+    - 9332則留言，開發者回復6229則留言
