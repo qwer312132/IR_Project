@@ -24,5 +24,5 @@
 ## 資料集
 1. for 14: dataset.py -> dataset.json, check_dataset.json -> preprocess.py -> preprocess.json, check_preprocess.json
     - 4個領域, 106個遊戲, 9263則留言
-2. for 23: gamecomment.py -> gamecomment.json -> preprocess2.py -> preprocess2.json
+2. for 23: getcomment.py -> gamecomment.json -> preprocess2.py -> preprocess2.json
     - 9332則留言，開發者回復6229則留言

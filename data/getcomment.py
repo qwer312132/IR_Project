@@ -7,8 +7,7 @@ from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from time import sleep
 import json
 # Specify the path to the Chrome driver executable
-chromedriver = 'D:\\Users\\ntou-nlp\\Downloads\\chromedriver-win64\\chromedriver.exe'
-
+chromedriver = '/usr/bin/chromedriver'
 
 # Create an instance of Options
 options = Options()
@@ -34,7 +33,7 @@ see.click()
 import requests
 from bs4 import BeautifulSoup
 
-for i in range(500):
+for i in range(50):
     iframe = driver.find_element(By.CSS_SELECTOR, "div[class='odk6He']")
     scroll_origin = ScrollOrigin.from_element(iframe)
     ActionChains(driver)\
