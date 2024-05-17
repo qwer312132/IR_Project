@@ -7,13 +7,18 @@ Original file is located at
     https://colab.research.google.com/drive/1Uv4iK19ebUlf5aCUGkcyKpvUw_Byk2Z5
 """
 
+!pip install fasttext
+!pip install huggingface_hub
+
 import json
 import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 import tensorflow_hub as hub
-# from ckiptagger import data_utils, construct_dictionary, WS, POS, NER
-# from huggingface_hub import hf_hub_download
+import fasttext
+from huggingface_hub import hf_hub_download
+from tensorflow import keras
+from sklearn.utils.class_weight import compute_class_weight
 import matplotlib.pyplot as plt
 from sklearn.model_selection import StratifiedKFold
 
@@ -30,11 +35,14 @@ with open('./comments.json', 'r', encoding='utf-8') as file:
 comments = [entry['comment'] for entry in data]
 ads = [entry['ad'] for entry in data]
 
-embed_url = "https://tfhub.dev/google/nnlm-zh-dim50/2"
-hub_layer = hub.KerasLayer(embed_url, input_shape=[], dtype=tf.string, trainable=True)
+model_path = hf_hub_download(repo_id="facebook/fasttext-zh-vectors", filename="model.bin")
+embad_model = fasttext.load_model(model_path)
 
 # 將資料分成訓練集和測試集（4:1）
 X_train, X_test, y_train, y_test = train_test_split(comments, ads, test_size=0.2, random_state=42, stratify=ads)
+
+X_train_embed = [embad_model[x] for x in X_train]
+X_test_embed = [embad_model[x] for x in X_test]
 
 # 定義交叉驗證的折數
 num_folds = 5
@@ -47,14 +55,23 @@ val_scores = []
 
 for fold, (train_index, val_index) in enumerate(kfold.split(X_train, y_train)):
     print(f"Training on fold {fold + 1}/{num_folds}...")
-    # 根據索引拆分訓練和驗證資料
-    trainX = np.array([X_train[i] for i in train_index])
-    valX = np.array([X_train[i] for i in val_index])
+    # 根據索引拆分訓練和驗證資料(from train data)
+    trainX = np.array([X_train_embed[i] for i in train_index])
+    valX = np.array([X_train_embed[i] for i in val_index])
     trainY = np.array([y_train[i] for i in train_index])
     valY = np.array([y_train[i] for i in val_index])
+    # 計算類別權重
+    train_class_weights = compute_class_weight('balanced', classes = np.unique(trainY), y = trainY)
+
+    val_class_weights = compute_class_weight('balanced', classes = np.unique(valY), y = valY)
+    val_sample_weights = np.zeros(len(valY))
+    val_sample_weights[valY == 1] = val_class_weights[1]
+    val_sample_weights[valY == 0] = val_class_weights[0]
+
+    # 將類別權重轉換為字典格式
+    train_class_weights = dict(enumerate(train_class_weights))
 
     model = tf.keras.Sequential([
-        hub_layer,
         tf.keras.layers.Dense(256, activation='relu'),
         tf.keras.layers.Dense(32, activation='relu'),
         tf.keras.layers.Dropout(0.2),
@@ -64,14 +81,16 @@ for fold, (train_index, val_index) in enumerate(kfold.split(X_train, y_train)):
     # 編譯模型
     model.compile(optimizer='adam',
                   loss=tf.losses.BinaryCrossentropy(from_logits=True),
-                  metrics=[tf.metrics.BinaryAccuracy(threshold=0.0, name='accuracy')])
+                  metrics=[keras.metrics.RecallAtPrecision(precision=0.8)])
 
     # 訓練模型
     history = model.fit(trainX,
                         trainY,
                         epochs=40,
                         batch_size=512,
-                        verbose=0)
+                        verbose=0,
+                        validation_data=(valX, valY, val_sample_weights),
+                        class_weight=train_class_weights)
 
     # 評估模型
     train_score = model.evaluate(trainX, trainY, verbose=0)
@@ -84,18 +103,18 @@ for fold, (train_index, val_index) in enumerate(kfold.split(X_train, y_train)):
 print("Average training scores:", np.mean(train_scores, axis=0))
 print("Average validation scores:", np.mean(val_scores, axis=0))
 
-y_pred = model.predict(X_test, verbose=1)
+y_pred = model.predict(np.array(X_test_embed), verbose=1)
 y_pred = (y_pred > 0.5).astype(np.integer)
 
 y_test_np = np.array(y_test)
 y_test_np = y_test_np[:, np.newaxis]
-accuracy = (y_pred == y_test_np).mean()
+# accuracy = (y_pred == y_test_np).mean()
 ad00 = np.logical_and(y_test_np == 0, y_pred == 0)
 ad01 = np.logical_and(y_test_np == 0, y_pred == 1)
 ad10 = np.logical_and(y_test_np == 1, y_pred == 0)
 ad11 = np.logical_and(y_test_np == 1, y_pred == 1)
 print("測試資料的數量:", len(y_test))
-print("準確度:", accuracy)
+print("召回率:", sum(ad11) / (sum(ad10) + sum(ad11)))
 print("本身不是廣告且判斷不是廣告的數量:", sum(ad00))
 print("本身不是廣告且判斷是廣告的數量:", sum(ad01))
 print("本身是廣告且判斷不是廣告的數量:", sum(ad10))
@@ -109,5 +128,5 @@ print("判斷為廣告的數量:", len(ad_pred))
 print("判斷為廣告的句子:\n", ad_pred)
 
 ad_test = X_test_np[np.logical_and(y_pred == 0, y_test_np == 1)]
-print("應為廣告卻被誤判的數量:", len(ad_test))
-print("應為廣告卻被誤判的句子:\n", ad_test)
+print("應為廣告且判斷不是廣告的數量:", len(ad_test))
+print("應為廣告且判斷不是廣告的句子:\n", ad_test)
