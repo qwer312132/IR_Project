@@ -36,7 +36,7 @@ comment_other = np.array([cc["其他"]for cc in comment_class])
 # exit()
 
 embeddings = np.load('data/comment_embeddings.npy')
-X_train, X_test, y_train, y_test, train_indices, test_indices = train_test_split(embeddings, comment_other, range(len(comments)), test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test, train_indices, test_indices = train_test_split(embeddings, comment_scene, range(len(comments)), test_size=0.2, random_state=42)
 num_folds = 5
 kfold = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=42)
 print("Successfully split data")
@@ -85,7 +85,7 @@ for fold, (train_index, val_index) in enumerate(kfold.split(X_train, y_train)):
 print("Average training scores:", np.mean(train_scores, axis=0))
 print("Average validation scores:", np.mean(val_scores, axis=0))
 y_pred = model.predict(X_test)
-y_pred = np.where(y_pred > 0.6, 1, 0)
+y_pred = np.where(y_pred > 0.5, 1, 0)
 
 #recall and precision
 TP = 0
@@ -115,7 +115,7 @@ plt.figure(figsize=(10, 8))
 sns.heatmap(cm, annot=True, fmt="d")
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
-plt.savefig('data/fun3/fun3_other.png')
+plt.savefig('data/fun3/fun3_scene.png')
 plt.show()
 
 output = [{}for i in range(4)]
@@ -136,5 +136,29 @@ for i in range(len(y_test)):
         output[2]["comment"].append(comments[test_indices[i]])
     else:
         output[3]["comment"].append(comments[test_indices[i]])
-with open('data/fun3/output_other.json', "w", encoding="utf-8") as f:
+with open('data/fun3/output_scene.json', "w", encoding="utf-8") as f:
     json.dump(output, f, ensure_ascii=False, indent=4)
+# scene
+# Recall: 0.41706161137440756
+# Precision: 0.2141119221411192
+# experence
+# Recall: 0.6706586826347305
+# Precision: 0.6436781609195402
+# device
+# Recall: 0.5909090909090909
+# Precision: 0.023423423423423424
+# technical
+# Recall: 1.0
+# Precision: 0.3933884297520661
+# service
+# Recall: 0.5
+# Precision: 0.05042016806722689
+# payment
+# Recall: 0.6666666666666666
+# Precision: 0.01122334455667789
+# script
+# Recall: 0.5806451612903226
+# Precision: 0.17307692307692307
+# other
+# Recall: 0.6
+# Precision: 0.0465444287729196
