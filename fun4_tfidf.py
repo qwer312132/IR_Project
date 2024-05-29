@@ -1,8 +1,10 @@
 import json
 import math
-with open('data/dataset3.json', "r", encoding="utf-8") as f:
+import re
+cluster_num = 50
+with open('data/sentence_without_stopword.json', "r", encoding="utf-8") as f:
     data = json.load(f)
-with open('data/dataset3_token2.json', "r", encoding="utf-8") as f:
+with open('data/dataset3_sentence_break_token.json', "r", encoding="utf-8") as f:
     tokens_list = json.load(f)
 with open('data/dataset3_gmm.json', "r", encoding="utf-8") as f:
     cluster = json.load(f)
@@ -11,13 +13,25 @@ with open('data/stopword.txt', "r", encoding="utf-8") as f:
     for line in f:
         stopword.append(line.strip())
 #remove stopword
+punctuation_pattern = re.compile(r'^[\W\s_]+$', re.UNICODE)
+for i, tokens in enumerate(tokens_list):
+    tokens_list[i] = [token for token in tokens if not punctuation_pattern.match(token)]
 tokens_list = [[word for word in tokens if word not in stopword] for tokens in tokens_list]
-group = [[]for i in range(10)]
+temp_tokens_list = []
+for i, tokens in enumerate(tokens_list):
+    if len(tokens) > 0:
+        temp_tokens_list.append(tokens)
+tokens_list = temp_tokens_list
+print(len(tokens_list))
+print(len(data))
+print(len(cluster))
+# exit()
+group = [[]for i in range(cluster_num)]
 for i, tokens in enumerate(tokens_list):
     group[cluster[i]].append(tokens)
-comments_of_cluster=[[]for i in range(10)]
+comments_of_cluster=[[]for i in range(cluster_num)]
 for i, group_id in enumerate(cluster):
-    comments_of_cluster[group_id].append(data[i]['comment'])
+    comments_of_cluster[group_id].append(data[i])
 #calculate idf
 N = len(cluster)
 idf = {}
@@ -42,7 +56,7 @@ for i, cluster_comments in enumerate(group):
     top5 = sorted(tfidf_cluster.items(), key=lambda x: x[1], reverse=True)[:5]
     words_and_values = {word: tfidf_cluster[word] for word, value in top5}
     preview.append({"words": words_and_values, "comments": comments_of_cluster[i]})
-with open('data/dataset3_tfidf_preview3.json', "w", encoding="utf-8") as f:
+with open('data/dataset3_tfidf_sentence.json', "w", encoding="utf-8") as f:
     json.dump(preview, f, ensure_ascii=False, indent=4)
 #output all tfidf values which is sorted of each cluster
 all = []
@@ -51,5 +65,3 @@ for i, cluster_comments in enumerate(group):
     sorted_tfidf = sorted(tfidf_cluster.items(), key=lambda x: x[1], reverse=True)
     words_and_values = {word: tfidf_cluster[word] for word, value in sorted_tfidf}
     all.append({"words": words_and_values, "comments": comments_of_cluster[i]})
-with open('data/dataset3_tfidf_all.json', "w", encoding="utf-8") as f:
-    json.dump(all, f, ensure_ascii=False, indent=4)
