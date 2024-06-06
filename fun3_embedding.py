@@ -10,9 +10,9 @@ with open('data/stopword.txt', "r", encoding="utf-8") as f:
     for line in f:
         stopword.append(line.strip())
 punctuation_pattern = re.compile(r'^[\W\s_]+$', re.UNICODE)
-for i, tokens in enumerate(comment_token):
-	comment_token[i] = [token for token in tokens if not punctuation_pattern.match(token)]
-comment_token = [[word for word in tokens if word not in stopword] for tokens in comment_token]
+# for i, tokens in enumerate(comment_token):
+# 	comment_token[i] = [token for token in tokens if not punctuation_pattern.match(token)]
+# comment_token = [[word for word in tokens if word not in stopword] for tokens in comment_token]
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertModel.from_pretrained('bert-base-uncased')
 embeddings = []

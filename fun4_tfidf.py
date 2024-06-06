@@ -1,7 +1,7 @@
 import json
 import math
 import re
-cluster_num = 50
+cluster_num = 100
 with open('data/sentence_without_stopword.json', "r", encoding="utf-8") as f:
     data = json.load(f)
 with open('data/dataset3_sentence_break_token.json', "r", encoding="utf-8") as f:
@@ -56,12 +56,12 @@ for i, cluster_comments in enumerate(group):
     top5 = sorted(tfidf_cluster.items(), key=lambda x: x[1], reverse=True)[:5]
     words_and_values = {word: tfidf_cluster[word] for word, value in top5}
     preview.append({"words": words_and_values, "comments": comments_of_cluster[i]})
-with open('data/dataset3_tfidf_sentence.json', "w", encoding="utf-8") as f:
+with open('data/dataset3_tfidf_sentence50.json', "w", encoding="utf-8") as f:
     json.dump(preview, f, ensure_ascii=False, indent=4)
 #output all tfidf values which is sorted of each cluster
-all = []
-for i, cluster_comments in enumerate(group):
-    tfidf_cluster = tfidf[i]
-    sorted_tfidf = sorted(tfidf_cluster.items(), key=lambda x: x[1], reverse=True)
-    words_and_values = {word: tfidf_cluster[word] for word, value in sorted_tfidf}
-    all.append({"words": words_and_values, "comments": comments_of_cluster[i]})
+# all = []
+# for i, cluster_comments in enumerate(group):
+#     tfidf_cluster = tfidf[i]
+#     sorted_tfidf = sorted(tfidf_cluster.items(), key=lambda x: x[1], reverse=True)
+#     words_and_values = {word: tfidf_cluster[word] for word, value in sorted_tfidf}
+#     all.append({"words": words_and_values, "comments": comments_of_cluster[i]})

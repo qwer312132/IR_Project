@@ -1,7 +1,7 @@
 import json
 import math
 import re
-cluster_num = 50
+cluster_num = 25
 with open('data/sentence_without_stopword.json', "r", encoding="utf-8") as f:
     data = json.load(f)
 with open('data/dataset3_sentence_break_token.json', "r", encoding="utf-8") as f:
@@ -45,5 +45,5 @@ for i, cluster_comments in enumerate(group):
 preview = []
 for i, cluster_comments in enumerate(group):
     preview.append({"df": top_5_words[i], "comments": comments_of_cluster[i]})
-with open('data/dataset3_df_sentence.json', "w", encoding="utf-8") as f:
+with open('data/dataset3_df_sentence25.json', "w", encoding="utf-8") as f:
     json.dump(preview, f, ensure_ascii=False, indent=4)

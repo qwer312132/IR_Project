@@ -17,7 +17,7 @@ print(len(sentence_without_stopword))
 punctuation_pattern = re.compile(r'^[\W\s_]+$', re.UNICODE)
 for i, tokens in enumerate(tokens_list):
 	tokens_list[i] = [token for token in tokens if not punctuation_pattern.match(token)]
-tokens_list = [[word for word in tokens if word not in stopword] for tokens in tokens_list]
+# tokens_list = [[word for word in tokens if word not in stopword] for tokens in tokens_list]
 # check if there are empty tokens
 # tokens_list = [tokens for tokens in tokens_list if len(tokens) > 0]
 temp_list = []
@@ -38,7 +38,7 @@ for tokens in tokens_list:
 		outputs = model(input_ids)
 		token_embeddings = outputs.last_hidden_state.squeeze(0).numpy()
 	embeddings.append(token_embeddings.mean(axis=0))
-gmm = GaussianMixture(n_components=50, random_state=0)
+gmm = GaussianMixture(n_components=100, random_state=0)
 clusters = gmm.fit_predict(embeddings)
 with open('data/dataset3_gmm.json', "w", encoding="utf-8") as f:
 	json.dump(clusters.tolist(), f)

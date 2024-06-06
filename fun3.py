@@ -25,35 +25,35 @@ comment_script = np.array([cc["外掛問題"]for cc in comment_class])
 comment_other = np.array([cc["其他"]for cc in comment_class])
 
 #print the number of each class that is not 0
+print("all:",len(comments))
 # print("scene:",len([c for c in comment_scene if c!=0]))
 # print("experence:",len([c for c in comment_experence if c!=0]))
 # print("device:",len([c for c in comment_device if c!=0]))
-# print("technical:",len([c for c in comment_technical if c!=0]))
+print("technical:",len([c for c in comment_technical if c!=0]))
 # print("service:",len([c for c in comment_service if c!=0]))
 # print("payment:",len([c for c in comment_payment if c!=0]))
 # print("script:",len([c for c in comment_script if c!=0]))
 # print("other:",len([c for c in comment_other if c!=0]))
 # exit()
+from collections import Counter
 
+class_counts = Counter(comment_technical)
+print(class_counts)
 embeddings = np.load('data/comment_embeddings.npy')
-X_train, X_test, y_train, y_test, train_indices, test_indices = train_test_split(embeddings, comment_scene, range(len(comments)), test_size=0.2, random_state=42)
-num_folds = 5
-kfold = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=42)
-print("Successfully split data")
 train_scores = []
 val_scores = []
+X_train, X_test, y_train, y_test, train_indices, test_indices = train_test_split(embeddings, comment_technical, range(len(comments)), test_size=0.2, random_state=42,stratify=comment_technical)
+num_folds = 5
+kfold = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=42)
 for fold, (train_index, val_index) in enumerate(kfold.split(X_train, y_train)):
     print(f"Training on fold {fold + 1}/{num_folds}...")
     trainX = X_train[train_index]
     valX = X_train[val_index]
     trainY = y_train[train_index]
     valY = y_train[val_index]
-
     unique_classes = np.unique(trainY)
     train_class_weights = compute_class_weight('balanced', classes=unique_classes, y=trainY)
-    train_class_weights_dict = dict(zip(unique_classes, train_class_weights))
-    
-    
+    train_class_weights_dict = dict(zip(unique_classes, train_class_weights))   
     train_class_weights = dict(enumerate(train_class_weights))
 
     model = tf.keras.Sequential([
@@ -65,7 +65,7 @@ for fold, (train_index, val_index) in enumerate(kfold.split(X_train, y_train)):
 
     model.compile(optimizer='adam',
                     loss='binary_crossentropy',
-                    metrics=[tf.keras.metrics.PrecisionAtRecall(0.8)])
+                    metrics=[tf.keras.metrics.PrecisionAtRecall(0.6)])
 
     train_sample_weights = np.array([train_class_weights_dict[class_label] for class_label in trainY])
 
@@ -115,7 +115,7 @@ plt.figure(figsize=(10, 8))
 sns.heatmap(cm, annot=True, fmt="d")
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
-plt.savefig('data/fun3/fun3_scene.png')
+plt.savefig('data/fun3/fun3_technical.png')
 plt.show()
 
 output = [{}for i in range(4)]
@@ -136,29 +136,29 @@ for i in range(len(y_test)):
         output[2]["comment"].append(comments[test_indices[i]])
     else:
         output[3]["comment"].append(comments[test_indices[i]])
-with open('data/fun3/output_scene.json', "w", encoding="utf-8") as f:
+with open('data/fun3/output_technical.json', "w", encoding="utf-8") as f:
     json.dump(output, f, ensure_ascii=False, indent=4)
 # scene
-# Recall: 0.41706161137440756
-# Precision: 0.2141119221411192
+# Recall: 0.4520547945205479
+# Precision: 0.20454545454545456
 # experence
-# Recall: 0.6706586826347305
-# Precision: 0.6436781609195402
+# Recall: 0.7299794661190965
+# Precision: 0.6087328767123288
 # device
-# Recall: 0.5909090909090909
-# Precision: 0.023423423423423424
-# technical
-# Recall: 1.0
-# Precision: 0.3933884297520661
-# service
 # Recall: 0.5
-# Precision: 0.05042016806722689
+# Precision: 0.041811846689895474
+# technical
+# Recall: 0.6200274348422496
+# Precision: 0.5413173652694611
+# service
+# Recall: 0.6851851851851852
+# Precision: 0.041340782122905026
 # payment
-# Recall: 0.6666666666666666
-# Precision: 0.01122334455667789
+# Recall: 0.15789473684210525
+# Precision: 0.015228426395939087
 # script
-# Recall: 0.5806451612903226
-# Precision: 0.17307692307692307
+# Recall: 0.6363636363636364
+# Precision: 0.21333333333333335
 # other
-# Recall: 0.6
-# Precision: 0.0465444287729196
+# Recall: 0.32786885245901637
+# Precision: 0.02680965147453083
